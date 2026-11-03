@@ -1,6 +1,7 @@
 const DB_NAME = "synergeticx-builder";
 const DB_VERSION = 1;
 const MAX_PROJECTS = 3;
+const THEME_KEY = "sx-builder-theme-v2";
 const state = { db: null, projects: [], activeId: "all", page: "home", filter: "All tasks", deferredPrompt: null, saveTimer: 0 };
 const $ = (selector, parent = document) => parent.querySelector(selector);
 const app = $("#app");
@@ -8,6 +9,20 @@ const taskDialog = $("#taskDialog");
 const confirmDialog = $("#confirmDialog");
 const money = new Intl.NumberFormat("en-AU", { style: "currency", currency: "AUD", maximumFractionDigits: 0 });
 const shortDate = new Intl.DateTimeFormat("en-AU", { day: "numeric", month: "short", year: "numeric" });
+
+function applyTheme(theme, persist = false) {
+  document.documentElement.dataset.theme = theme;
+  if (persist) { try { localStorage.setItem(THEME_KEY, theme); } catch (_) {} }
+  const icon = $("#themeIcon");
+  if (icon) icon.innerHTML = theme === "dark"
+    ? '<path d="M20.3 15.2A8.4 8.4 0 0 1 8.8 3.7 8.5 8.5 0 1 0 20.3 15.2Z"/>'
+    : '<circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"/>';
+  const color = getComputedStyle(document.documentElement).getPropertyValue("--background-elevated").trim();
+  $("#themeColor")?.setAttribute("content", color);
+}
+let savedTheme = "";
+try { savedTheme = localStorage.getItem(THEME_KEY) || ""; } catch (_) {}
+applyTheme(savedTheme || "light");
 
 function uid() { return globalThis.crypto?.randomUUID?.() || `p-${Date.now()}-${Math.random().toString(16).slice(2)}`; }
 function esc(value = "") { return String(value).replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch])); }
@@ -53,8 +68,14 @@ function currentProject() { return state.projects.find(p => p.id === state.activ
 function changePage(page) { state.page = page; render(); app.focus({ preventScroll: true }); }
 
 function render() {
-  $("#bottomNav").hidden = state.projects.length === 0;
-  document.querySelectorAll(".nav-item").forEach(btn => btn.classList.toggle("active", btn.dataset.page === state.page));
+  $("#navFooter").hidden = state.projects.length === 0;
+  document.querySelectorAll(".nav-item").forEach(btn => {
+    const active = btn.dataset.page === state.page;
+    btn.classList.toggle("active", active);
+    btn.classList.toggle("tab-selected", active);
+    btn.setAttribute("aria-selected", String(active));
+    if ("selected" in btn) btn.selected = active;
+  });
   if (!state.projects.length) { renderWelcome(); return; }
   const projects = currentProjects();
   if (state.page === "chart") renderChart(projects);
@@ -307,6 +328,11 @@ let toastTimer;
 function toast(message) { const el = $("#toast"); el.textContent = message; el.classList.add("show"); clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.remove("show"), 2800); }
 
 document.querySelectorAll(".nav-item").forEach(button => button.addEventListener("click", () => changePage(button.dataset.page)));
+$("#themeBtn").addEventListener("click", () => applyTheme(document.documentElement.dataset.theme === "dark" ? "light" : "dark", true));
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", event => {
+  let userChoice = ""; try { userChoice = localStorage.getItem(THEME_KEY) || ""; } catch (_) {}
+  if (!userChoice) applyTheme(event.matches ? "dark" : "light");
+});
 window.addEventListener("beforeinstallprompt", event => { event.preventDefault(); state.deferredPrompt = event; $("#installBtn").hidden = false; });
 $("#installBtn").addEventListener("click", async () => { if (!state.deferredPrompt) return; state.deferredPrompt.prompt(); await state.deferredPrompt.userChoice; state.deferredPrompt = null; $("#installBtn").hidden = true; });
 start();

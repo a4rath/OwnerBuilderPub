@@ -3,36 +3,50 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#103b39">
+  <meta id="themeColor" name="theme-color" content="#f5f7ff">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="SX Builder">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@ionic/core@9.0.10/css/ionic.bundle.css">
   <link rel="stylesheet" href="styles.css">
   <title>SynergeticX Builder</title>
 </head>
 <body>
-  <div class="app-shell">
-    <header class="topbar">
+  <ion-app>
+    <ion-header class="app-header" translucent="true">
+      <ion-toolbar class="app-toolbar">
+      <div class="topbar">
       <a class="brand" href="#home" aria-label="SynergeticX Builder home">
         <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 48 48"><path d="M5 23 24 8l19 15h-5v18H27V29h-6v12H10V23z"/><path class="windows" d="M19 19h4v4h-4zm7 0h4v4h-4z"/></svg></span>
         <span><strong>SynergeticX Builder</strong><small>OWNER-BUILDER PROJECTS</small></span>
       </a>
-      <button id="installBtn" class="install-button" hidden>Install</button>
-    </header>
-    <main id="app" class="main-content" tabindex="-1"></main>
-    <nav id="bottomNav" class="bottom-nav" aria-label="Main navigation">
-      <button data-page="home" class="nav-item active"><span>⌂</span><small>Projects</small></button>
-      <button data-page="chart" class="nav-item"><span>▥</span><small>Progress</small></button>
-      <button data-page="schedule" class="nav-item"><span>☷</span><small>Schedule</small></button>
-      <button data-page="data" class="nav-item"><span>⇄</span><small>Data</small></button>
-    </nav>
-  </div>
+      <div class="header-actions">
+        <button id="themeBtn" class="icon-button theme-button" aria-label="Switch colour theme" title="Switch colour theme"><svg id="themeIcon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"/></svg></button>
+        <button id="installBtn" class="install-button" hidden>Install</button>
+      </div>
+      </div>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content id="pageContent" class="page-content">
+      <main id="app" class="main-content" tabindex="-1"></main>
+    </ion-content>
+    <ion-footer id="navFooter" class="app-footer" translucent="true">
+      <ion-tab-bar id="bottomNav" class="bottom-nav" aria-label="Main navigation">
+        <ion-tab-button data-page="home" class="nav-item active tab-selected" tab="home"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></svg><ion-label>Projects</ion-label></ion-tab-button>
+        <ion-tab-button data-page="chart" class="nav-item" tab="progress"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V5m0 14h17M8 15h3V9H8zm6 0h3V5h-3zm6 0h3V11h-3z"/></svg><ion-label>Progress</ion-label></ion-tab-button>
+        <ion-tab-button data-page="schedule" class="nav-item" tab="schedule"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 6h15M5 12h15M5 18h15M2 6h.01M2 12h.01M2 18h.01"/></svg><ion-label>Schedule</ion-label></ion-tab-button>
+        <ion-tab-button data-page="data" class="nav-item" tab="data"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h14m0 0-3-3m3 3-3 3M20 17H6m0 0 3-3m-3 3 3 3"/></svg><ion-label>Data</ion-label></ion-tab-button>
+      </ion-tab-bar>
+    </ion-footer>
+  </ion-app>
   <input id="fileInput" type="file" accept=".json,application/json" multiple hidden>
   <dialog id="taskDialog" class="task-dialog"></dialog>
   <dialog id="confirmDialog" class="confirm-dialog"></dialog>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@ionic/core@9.0.10/dist/ionic/ionic.esm.js"></script>
+  <script nomodule src="https://cdn.jsdelivr.net/npm/@ionic/core@9.0.10/dist/ionic/ionic.js"></script>
   <script src="app.js" defer></script>
 </body>
 </html>
