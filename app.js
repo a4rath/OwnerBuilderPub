@@ -90,7 +90,8 @@ function renderWelcome() {
     <p class="intro">Start by loading a project JSON file. Your schedules stay in this browser on this device.</p>
     <section class="hero"><p class="hero-label">YOUR PROJECT DATA STAYS WITH YOU</p><div class="hero-main"><div class="hero-title">Import once, track anywhere,<br>share with a simple file.</div><span class="hero-percent">SX</span></div><div class="hero-track"><i style="width:100%"></i></div><div class="hero-foot"><span>On-device IndexedDB</span><span>JSON in · JSON out</span></div></section>
     <div class="surface data-card"><h3>Load your first project</h3><p>Select the private JSON file for this project. The data is copied into this browser and remains available offline after the app has loaded.</p><button class="btn full" data-action="import">＋ Load Project JSON File</button></div>
-    <div class="callout"><span>⇄</span><div><strong>For multiple projects</strong>Load one JSON file for each project you manage. You can keep up to three separate projects on this device.</div></div>`;
+    <div class="callout"><span>⇄</span><div><strong>For multiple projects</strong>Load one JSON file for each project you manage. You can keep up to three separate projects on this device.</div></div>
+    <div class="surface data-card"><h3>Add an app icon</h3><p>Install SynergeticX Builder from your browser to launch it from your Home Screen.</p><button class="btn ghost full" data-action="install">Install / Add to Home Screen</button></div>`;
   bindPageControls();
 }
 
@@ -183,7 +184,7 @@ function renderData() {
     <div class="surface data-card">${projects.map(p => `<div class="data-project-row"><div><strong>${esc(p.name)} · ${esc(p.location || "")}</strong><small>${p.tasks.length} tasks · Updated ${p.updatedAt ? dateLabel(p.updatedAt.slice(0,10)) : "from starter file"}</small></div><span class="button-row"><button class="btn secondary" data-export-project="${esc(p.id)}">Export</button><button class="btn danger" data-remove-project="${esc(p.id)}">Remove</button></span></div>`).join("")}</div>
     <div class="surface data-card"><h3>Add another project</h3><p>You can keep up to three project files on this device.</p><div class="button-row"><button class="btn ghost" data-action="new-project">＋ Create project</button></div></div>
     <div class="callout"><span>ⓘ</span><div><strong>For family sharing</strong>Export one project and send its JSON file by AirDrop, text or email. The recipient loads that file in their own browser. There is no shared live database, so import the latest file to receive updates.</div></div>
-    <div class="surface data-card"><h3>Add this PWA to your Home Screen</h3><p>Open the secure PWA link in Chrome on Android or Safari on iPhone, then choose <b>Add to Home Screen</b>. It gets its own launch icon and can work offline after its first load.</p></div>`;
+    <div class="surface data-card"><h3>Add this PWA to your Home Screen</h3><p>Websites do not add an icon automatically. Use your browser’s install option to put SynergeticX Builder on your Home Screen.</p><button class="btn secondary full" data-action="install">Install / Add to Home Screen</button></div>`;
 }
 
 function bindPageControls() {
@@ -202,6 +203,7 @@ async function handleAction(action) {
   if (action === "import") $("#fileInput").click();
   if (action === "new-project") createProject();
   if (action === "add-task") createTask();
+  if (action === "install") installApp();
 }
 
 $("#fileInput").addEventListener("change", async event => {
@@ -327,12 +329,34 @@ function updateLiveSummary() { const summary = $(".chart-summary", taskDialog); 
 let toastTimer;
 function toast(message) { const el = $("#toast"); el.textContent = message; el.classList.add("show"); clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.remove("show"), 2800); }
 
+async function installApp() {
+  if (state.deferredPrompt) {
+    const promptEvent = state.deferredPrompt;
+    state.deferredPrompt = null;
+    await promptEvent.prompt();
+    const { outcome } = await promptEvent.userChoice;
+    if (outcome === "accepted") toast("SynergeticX Builder is being installed.");
+    return;
+  }
+  const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  const instructions = isIOS
+    ? "Open this page in Safari, tap Share, choose Add to Home Screen, then tap Add."
+    : /Android/i.test(navigator.userAgent)
+      ? "In Chrome, tap the ⋮ menu, choose Install app or Add to Home screen, then confirm."
+      : "Open this page in your phone browser. Use its Install app or Add to Home Screen option. On iPhone, use Safari’s Share button, then Add to Home Screen.";
+  confirmDialog.innerHTML = `<div class="dialog-header"><div><p class="eyebrow">QUICK SETUP</p><h2>Install SynergeticX Builder</h2></div><button class="icon-button" data-install-close aria-label="Close">×</button></div><div class="dialog-body"><p class="intro">${instructions}</p><p class="muted" style="font-size:11px">The app icon is added only after you confirm in the browser menu.</p></div><div class="dialog-actions"><button class="btn secondary" data-install-close>Got it</button></div>`;
+  confirmDialog.showModal();
+  confirmDialog.querySelectorAll("[data-install-close]").forEach(button => button.addEventListener("click", () => confirmDialog.close()));
+}
+
 document.querySelectorAll(".nav-item").forEach(button => button.addEventListener("click", () => changePage(button.dataset.page)));
 $("#themeBtn").addEventListener("click", () => applyTheme(document.documentElement.dataset.theme === "dark" ? "light" : "dark", true));
 matchMedia("(prefers-color-scheme: dark)").addEventListener("change", event => {
   let userChoice = ""; try { userChoice = localStorage.getItem(THEME_KEY) || ""; } catch (_) {}
   if (!userChoice) applyTheme(event.matches ? "dark" : "light");
 });
-window.addEventListener("beforeinstallprompt", event => { event.preventDefault(); state.deferredPrompt = event; $("#installBtn").hidden = false; });
-$("#installBtn").addEventListener("click", async () => { if (!state.deferredPrompt) return; state.deferredPrompt.prompt(); await state.deferredPrompt.userChoice; state.deferredPrompt = null; $("#installBtn").hidden = true; });
+window.addEventListener("beforeinstallprompt", event => { event.preventDefault(); state.deferredPrompt = event; });
+$("#installBtn").addEventListener("click", installApp);
+window.addEventListener("appinstalled", () => { state.deferredPrompt = null; $("#installBtn").hidden = true; toast("SynergeticX Builder was installed."); });
+if (matchMedia("(display-mode: standalone)").matches || navigator.standalone === true) $("#installBtn").hidden = true;
 start();

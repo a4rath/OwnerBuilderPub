@@ -24,6 +24,8 @@ There are two practical choices:
 
 Once the app is open in a secure browser page:
 
+Opening the URL does not create a Home Screen icon by itself. Tap **Install** in the app header. If the browser provides a native install prompt, the app opens it; otherwise it shows the steps for that phone. You can also use the browser menu directly:
+
 - **Android:** open the link in Chrome, tap **Install app** if offered, or browser menu → **Add to Home screen**.
 - **iPhone:** open the link in Safari → Share → **Add to Home Screen** → turn on **Open as Web App** → Add.
 
