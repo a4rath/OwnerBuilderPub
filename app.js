@@ -329,6 +329,8 @@ function updateLiveSummary() { const summary = $(".chart-summary", taskDialog); 
 let toastTimer;
 function toast(message) { const el = $("#toast"); el.textContent = message; el.classList.add("show"); clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.remove("show"), 2800); }
 
+function isIOSDevice() { return /iPhone|iPad|iPod/i.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1); }
+
 async function installApp() {
   if (state.deferredPrompt) {
     const promptEvent = state.deferredPrompt;
@@ -338,13 +340,15 @@ async function installApp() {
     if (outcome === "accepted") toast("SynergeticX Builder is being installed.");
     return;
   }
-  const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  const isIOS = isIOSDevice();
   const instructions = isIOS
-    ? "Open this page in Safari, tap Share, choose Add to Home Screen, then tap Add."
+    ? "iOS requires you to add the icon from Safari. Open this page in Safari, tap Share, choose Add to Home Screen, turn on Open as Web App if shown, then tap Add."
     : /Android/i.test(navigator.userAgent)
       ? "In Chrome, tap the ⋮ menu, choose Install app or Add to Home screen, then confirm."
       : "Open this page in your phone browser. Use its Install app or Add to Home Screen option. On iPhone, use Safari’s Share button, then Add to Home Screen.";
-  confirmDialog.innerHTML = `<div class="dialog-header"><div><p class="eyebrow">QUICK SETUP</p><h2>Install SynergeticX Builder</h2></div><button class="icon-button" data-install-close aria-label="Close">×</button></div><div class="dialog-body"><p class="intro">${instructions}</p><p class="muted" style="font-size:11px">The app icon is added only after you confirm in the browser menu.</p></div><div class="dialog-actions"><button class="btn secondary" data-install-close>Got it</button></div>`;
+  const title = isIOS ? "Finish adding the icon" : "Install SynergeticX Builder";
+  const detail = isIOS ? "A website cannot add its own icon on iPhone. Safari’s Add to Home Screen action must complete the install." : "The app icon is added only after you confirm in the browser menu.";
+  confirmDialog.innerHTML = `<div class="dialog-header"><div><p class="eyebrow">QUICK SETUP</p><h2>${title}</h2></div><button class="icon-button" data-install-close aria-label="Close">×</button></div><div class="dialog-body"><p class="intro">${instructions}</p><p class="muted" style="font-size:11px">${detail}</p></div><div class="dialog-actions"><button class="btn secondary" data-install-close>Got it</button></div>`;
   confirmDialog.showModal();
   confirmDialog.querySelectorAll("[data-install-close]").forEach(button => button.addEventListener("click", () => confirmDialog.close()));
 }
@@ -357,6 +361,11 @@ matchMedia("(prefers-color-scheme: dark)").addEventListener("change", event => {
 });
 window.addEventListener("beforeinstallprompt", event => { event.preventDefault(); state.deferredPrompt = event; });
 $("#installBtn").addEventListener("click", installApp);
+if (isIOSDevice()) {
+  $("#installBtn").textContent = "Add to Home";
+  $("#installBtn").setAttribute("aria-label", "Add SynergeticX Builder to Home Screen");
+  $("#installBtn").title = "Add SynergeticX Builder to Home Screen";
+}
 window.addEventListener("appinstalled", () => { state.deferredPrompt = null; $("#installBtn").hidden = true; toast("SynergeticX Builder was installed."); });
 if (matchMedia("(display-mode: standalone)").matches || navigator.standalone === true) $("#installBtn").hidden = true;
 start();
