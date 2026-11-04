@@ -1,4 +1,4 @@
-const CACHE_NAME = "sx-builder-v5";
+const CACHE_NAME = "sx-builder-v6";
 const CORE = ["./", "./index.html", "./styles.css", "./app.js", "./manifest.webmanifest", "./icons/icon-192.png", "./icons/icon-512.png"];
 const IONIC_ASSETS = [
   "https://cdn.jsdelivr.net/npm/@ionic/core@9.0.10/css/ionic.bundle.css",

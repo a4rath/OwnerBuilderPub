@@ -1,7 +1,7 @@
 const DB_NAME = "synergeticx-builder";
 const DB_VERSION = 1;
 const MAX_PROJECTS = 3;
-const THEME_KEY = "sx-builder-theme-v2";
+const THEME_KEY = "sx-builder-theme-v3";
 const state = { db: null, projects: [], activeId: "all", page: "home", filter: "All tasks", deferredPrompt: null, saveTimer: 0 };
 const $ = (selector, parent = document) => parent.querySelector(selector);
 const app = $("#app");
@@ -15,8 +15,12 @@ function applyTheme(theme, persist = false) {
   if (persist) { try { localStorage.setItem(THEME_KEY, theme); } catch (_) {} }
   const icon = $("#themeIcon");
   if (icon) icon.innerHTML = theme === "dark"
-    ? '<path d="M20.3 15.2A8.4 8.4 0 0 1 8.8 3.7 8.5 8.5 0 1 0 20.3 15.2Z"/>'
-    : '<circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"/>';
+    ? '<circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"/>'
+    : '<path d="M20.3 15.2A8.4 8.4 0 0 1 8.8 3.7 8.5 8.5 0 1 0 20.3 15.2Z"/>';
+  const themeButton = $("#themeBtn");
+  const nextThemeLabel = theme === "dark" ? "Switch to day theme" : "Switch to night theme";
+  themeButton?.setAttribute("aria-label", nextThemeLabel);
+  if (themeButton) themeButton.title = nextThemeLabel;
   const color = getComputedStyle(document.documentElement).getPropertyValue("--background-elevated").trim();
   $("#themeColor")?.setAttribute("content", color);
 }
@@ -280,7 +284,7 @@ function openTask(projectId, taskId) {
       <div class="date-grid"><div class="field"><label for="editActualStart">Actual start</label><input id="editActualStart" type="date" value="${esc(task.actualStart)}"></div><div class="field"><label for="editActualFinish">Actual finish</label><input id="editActualFinish" type="date" value="${esc(task.actualFinish)}"></div></div>
       <div class="date-grid"><div class="field"><label for="editEstimate">Estimated cost (AUD)</label><input id="editEstimate" type="number" min="0" step="0.01" value="${Number(task.estimate) || ""}"></div><div class="field"><label for="editActualCost">Actual cost to date (AUD)</label><input id="editActualCost" type="number" min="0" step="0.01" value="${Number(task.actualCost) || ""}"></div></div>
       <div class="field"><label for="editNotes">Site notes</label><textarea id="editNotes" maxlength="4000" placeholder="Short update, issue or handover note…">${esc(task.notes)}</textarea></div>
-      <div class="callout" ${task.impacted ? "" : "hidden"}><span>⚠</span><div><strong>Schedule impact</strong>This activity was shifted by a planned date change. Review its dates.</div></div>
+      <div class="callout warning" ${task.impacted ? "" : "hidden"}><span>⚠</span><div><strong>Schedule impact</strong>This activity was shifted by a planned date change. Review its dates.</div></div>
     </div><div class="dialog-actions"><button class="btn ghost" data-close>Close</button><button class="btn secondary" data-delete-task>Delete task</button></div>`;
   taskDialog.showModal();
   taskDialog.querySelectorAll("[data-close]").forEach(b => b.addEventListener("click", () => taskDialog.close()));
